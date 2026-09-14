@@ -1,0 +1,103 @@
+"use client";
+// "use client" zaroori hai — useCart() aur useRouter() (redirect ke liye)
+// dono client-side hooks hain.
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useCart } from "@/context/CartContext";
+import CheckoutForm from "@/components/CheckoutForm";
+import PriceTag from "@/components/ui/PriceTag";
+import Button from "@/components/ui/Button";
+
+export default function CheckoutPage() {
+  const { items, totalPrice, clearCart } = useCart();
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // CheckoutForm khud validation kar ke sirf clean/valid data yahan bhejta
+  // hai — is function ka kaam sirf "order place karna" hai.
+  function handlePlaceOrder(formData) {
+    setIsSubmitting(true);
+
+    // PHASE 1 (abhi): koi real backend nahi, isliye ek fake order ID
+    // generate kar rahe hain aur seedha confirmation page par bhej rahe hain.
+    // PHASE 2 mein: yahan /api/orders ko POST request jayegi (formData +
+    // items + totalPrice ke sath), aur real order ID response se milega.
+    const fakeOrderId = "SIN-" + Math.floor(10000 + Math.random() * 90000);
+
+    setTimeout(() => {
+      clearCart(); // order "place" hone ke baad cart khali
+      router.push(`/order-confirmation/${fakeOrderId}`);
+    }, 600); // halka delay — real network request jaisa feel dene ke liye
+  }
+
+  // Agar cart hi khali hai, to checkout form dikhane ka koi fayda nahi —
+  // user ko wapas shop ki taraf bhejte hain
+  if (items.length === 0) {
+    return (
+      <section className="section">
+        <div className="wrap" style={{ textAlign: "center", padding: "60px 0" }}>
+          <h1>Your bag is empty</h1>
+          <p style={{ color: "var(--grey)", margin: "12px 0 24px" }}>
+            Add something to your bag before checking out.
+          </p>
+          <Button href="/shop">Continue Shopping</Button>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <>
+      <div className="page-header">
+        <div className="wrap">
+          <div className="crumb">
+            <Link href="/">Home</Link> / Checkout
+          </div>
+          <h1>Checkout</h1>
+        </div>
+      </div>
+
+      <section className="section">
+        <div className="wrap contact-grid">
+          <div>
+            <CheckoutForm onSubmit={handlePlaceOrder} isSubmitting={isSubmitting} />
+          </div>
+
+          <div>
+            <div className="contact-info-card">
+              <h3>Order Summary</h3>
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}
+                >
+                  <span style={{ fontSize: 13.5 }}>
+                    {item.name} × {item.quantity}
+                  </span>
+                  <span style={{ fontSize: 13.5 }}>
+                    <PriceTag price={item.price * item.quantity} />
+                  </span>
+                </div>
+              ))}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontWeight: 700,
+                  borderTop: "1px solid var(--line)",
+                  paddingTop: 14,
+                  marginTop: 6,
+                }}
+              >
+                <span>Total</span>
+                <PriceTag price={totalPrice} size="lg" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}

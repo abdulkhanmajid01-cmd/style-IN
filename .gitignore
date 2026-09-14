@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# Environment variables — YEH FILE KABHI COMMIT NAHI HONI CHAHIYE.
+# Phase 2/3 mein jab DATABASE_URL, ADMIN_PASSWORD_HASH, SESSION_SECRET
+# jaisi cheezein .env.local mein aayengi, yeh line unhe GitHub se bachati hai.
+.env
+.env.local
+.env.*.local
+
+# OS/editor files
+.DS_Store
+*.pem
+npm-debug.log*
+.vscode/*
+!.vscode/extensions.json
+
+# Vercel
+.vercel
