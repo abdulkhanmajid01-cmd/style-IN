@@ -8,11 +8,18 @@ import Hero from "@/components/Hero";
 import ProductGrid from "@/components/ProductGrid";
 import CategoryBanner from "@/components/CategoryBanner";
 import Button from "@/components/ui/Button";
-import { getAllProducts, getProductsByCategory } from "@/lib/data/store";
-import { categories } from "@/lib/data/categories";
+import { getAllProducts, getProductsByCategory, getAllCategories } from "@/lib/data/store";
+
+// Yeh page store se directly padhta hai (admin ke live changes ke liye) —
+// is liye force-dynamic: warna Next.js 14 build-time par isay static
+// prerender kar deta aur runtime ke naye categories home par kabhi na dikhte
+export const dynamic = "force-dynamic";
 
 export default function HomePage() {
   const products = getAllProducts();
+  // Categories bhi ab live store se aati hain (products jaisa) — admin ka
+  // naya add kiya hua category yahan khud-ba-khud banner dikhata hai
+  const categories = getAllCategories();
   // "Featured" ke liye abhi sirf pehle 4 products le rahe hain.
   // Phase 3 mein yeh database query se aayega (jaise "isFeatured: true" filter)
   const featuredProducts = products.slice(0, 4);
@@ -21,10 +28,10 @@ export default function HomePage() {
     <>
       <Hero />
 
-      {/* Category banners — categories.js array ko LOOP kar rahe hain.
-          Naya category add hote hi (chahe "Joggers" ho) yahan khud apna
-          banner + featured products ke sath aa jayega, code chedne ki
-          zaroorat nahi. */}
+      {/* Category banners — live store ke categories array ko LOOP kar rahe
+          hain. Admin naya category add karte hi (chahe "Joggers" ho) yahan
+          khud apna banner + featured products ke sath aa jayega, code
+          chedne ki zaroorat nahi. */}
       <section className="section-tight">
         <div className="wrap">
           {categories.map((category) => {

@@ -9,6 +9,9 @@ import {
   getProductColors,
   getProductSizes,
   getVariantStock,
+  getDisplayPrice,
+  colorToHex,
+  formatCategoryLabel,
   isProductSoldOut,
   isColorSoldOut,
 } from "@/lib/data/products";
@@ -18,21 +21,6 @@ import Badge from "@/components/ui/Badge";
 import PriceTag from "@/components/ui/PriceTag";
 import Button from "@/components/ui/Button";
 import AccordionSection from "@/components/ui/AccordionSection";
-
-const COLOR_HEX = {
-  Black: "#1a1a1a",
-  White: "#f5f5f0",
-  Tan: "#b08968",
-  Brown: "#5c4033",
-  Cream: "#f0e6d6",
-  Grey: "#9a978f",
-  Gold: "#c9a24b",
-  Silver: "#c4c4c4",
-  Navy: "#1e2a4a",
-};
-function colorToHex(name) {
-  return COLOR_HEX[name] || "#bbb";
-}
 
 export default function ProductDetailPage({ params }) {
   // Sab hooks upar, unconditionally declare karte hain — chahe product
@@ -45,6 +33,7 @@ export default function ProductDetailPage({ params }) {
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [variantError, setVariantError] = useState("");
+  const [categoryName, setCategoryName] = useState(null);
 
   // Live data /api/products/[slug] se — admin ke edits reflect karta hai
   useEffect(() => {
@@ -61,6 +50,19 @@ export default function ProductDetailPage({ params }) {
         setIsLoading(false);
       });
   }, [params.slug]);
+
+  // /api/categories se category ka asal naam (admin wala) — hardcoded
+  // "Bags/Shoes" ki jagah, taake naye categories ka bhi sahi label aaye
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((res) => res.json())
+      .then((cats) => {
+        if (!Array.isArray(cats)) return;
+        const found = cats.find((cat) => cat.slug === product?.category);
+        if (found) setCategoryName(found.name);
+      })
+      .catch(() => {});
+  }, [product?.category]);
 
   if (notFoundFlag) {
     notFound();
@@ -79,6 +81,8 @@ export default function ProductDetailPage({ params }) {
   const colors = getProductColors(product);
   const sizes = selectedColor ? getProductSizes(product, selectedColor) : [];
   const hasSizes = sizes.length > 0;
+  const { current, original } = getDisplayPrice(product);
+  const categoryLabel = categoryName || formatCategoryLabel(product.category);
 
   const currentStock = selectedColor
     ? getVariantStock(product, selectedColor, hasSizes ? selectedSize : null)
@@ -104,7 +108,7 @@ export default function ProductDetailPage({ params }) {
         id: product.id,
         slug: product.slug,
         name: `${product.name} — ${selectedColor}${selectedSize ? `, ${selectedSize}` : ""}`,
-        price: product.price,
+        price: current, // hamesha discounted/current price
       },
       quantity
     );
@@ -131,9 +135,9 @@ export default function ProductDetailPage({ params }) {
           </CategoryVisual>
 
           <div className="product-detail-info">
-            <div className="cat">{product.category === "bag" ? "Bags" : "Shoes"}</div>
+            <div className="cat">{categoryLabel}</div>
             <h1>{product.name}</h1>
-            <PriceTag price={product.price} originalPrice={product.salePrice} size="lg" />
+            <PriceTag price={current} originalPrice={original} size="lg" />
 
             <div className="variant-group">
               <label>
@@ -157,7 +161,7 @@ export default function ProductDetailPage({ params }) {
                       disabled={colorOut}
                       aria-label={colorOut ? `${color} (out of stock)` : color}
                       aria-pressed={selectedColor === color}
-                      title={colorOut ? "Out of stock" : undefined}
+                      title={colorOut ? `${color} (out of stock)` : color}
                     >
                       <span className="color-swatch-inner" style={{ background: colorToHex(color) }} />
                     </button>

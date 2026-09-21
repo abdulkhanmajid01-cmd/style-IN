@@ -81,6 +81,10 @@ export default function AdminDashboardPage() {
           <h3>Products</h3>
           <p>Add, edit, or remove products and stock.</p>
         </Link>
+        <Link href="/admin/categories" className="admin-nav-card">
+          <h3>Categories</h3>
+          <p>Add categories and manage their banners.</p>
+        </Link>
         <Link href="/admin/orders" className="admin-nav-card">
           <h3>Orders</h3>
           <p>View incoming orders and update status.</p>

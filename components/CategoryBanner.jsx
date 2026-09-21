@@ -25,7 +25,10 @@ const CATEGORY_VISUAL = {
   ),
 };
 
-// category: { slug, name, bannerTitle, bannerSubtitle, visual } — categories.js se
+// category: { slug, name, bannerTitle, bannerSubtitle, bannerImage, visual }
+// bannerImage: agar admin ne upload ki ho (admin panel se) to woh <img> se
+// dikhegi — warna niche wala line-art icon (CATEGORY_VISUAL[visual]) fallback
+// hai, bilkul CategoryVisual.jsx walay pattern ki tarah
 // productCount: total kitne products is category mein hain — "View All" sirf
 // tab dikhega jab products ek chhote grid se zyada hon
 export default function CategoryBanner({ category, productCount = 0 }) {
@@ -33,7 +36,13 @@ export default function CategoryBanner({ category, productCount = 0 }) {
 
   return (
     <div className={`category-banner cb-${category.visual}`}>
-      <div className="cb-visual">{CATEGORY_VISUAL[category.visual]}</div>
+      <div className="cb-visual">
+        {category.bannerImage ? (
+          <img src={category.bannerImage} alt={category.name} className="cb-visual-image" />
+        ) : (
+          CATEGORY_VISUAL[category.visual]
+        )}
+      </div>
 
       <div className="cb-text">
         <h2>{category.bannerTitle}</h2>

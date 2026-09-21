@@ -22,7 +22,14 @@ export async function POST(request) {
     );
   }
 
-  const newProduct = addProduct(body);
+  // Explicit normalization — khali/undefined fields null ho jayein aur badge
+  // ("sale"/"new") string ke roop mein wahi rahe jaisa form bhejta hai
+  const newProduct = addProduct({
+    ...body,
+    price: Number(body.price),
+    salePrice: body.salePrice ? Number(body.salePrice) : null,
+    badge: body.badge && String(body.badge).trim() ? String(body.badge).trim() : null,
+  });
   return NextResponse.json(newProduct, { status: 201 });
 }
 
@@ -32,6 +39,15 @@ export async function PUT(request) {
 
   if (!id) {
     return NextResponse.json({ error: "Product id is required." }, { status: 400 });
+  }
+
+  // Same normalization as POST — taake badge kabhi galti se null na ho
+  if (updates.price !== undefined) updates.price = Number(updates.price);
+  if (updates.salePrice !== undefined) {
+    updates.salePrice = updates.salePrice ? Number(updates.salePrice) : null;
+  }
+  if (updates.badge !== undefined) {
+    updates.badge = updates.badge && String(updates.badge).trim() ? String(updates.badge).trim() : null;
   }
 
   const updated = updateProduct(id, updates);

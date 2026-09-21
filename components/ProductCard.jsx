@@ -8,11 +8,19 @@ import Badge from "./ui/Badge";
 import PriceTag from "./ui/PriceTag";
 import Button from "./ui/Button";
 import CategoryVisual from "./CategoryVisual";
-import { isProductSoldOut } from "@/lib/data/products";
+import {
+  getProductColors,
+  getDisplayPrice,
+  colorToHex,
+  formatCategoryLabel,
+  isProductSoldOut,
+} from "@/lib/data/products";
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
   const soldOut = isProductSoldOut(product); // sab variants ka stock 0 hai ya nahi
+  const colors = getProductColors(product); // card ke neeche dots ke liye
+  const { current, original } = getDisplayPrice(product); // sale semantics ek jagah
 
   function handleAddToBag() {
     // Cart mein sirf woh fields bhejte hain jo cart ko chahiye —
@@ -22,7 +30,7 @@ export default function ProductCard({ product }) {
       id: product.id,
       slug: product.slug,
       name: product.name,
-      price: product.price,
+      price: current, // hamesha discounted/current price
     });
   }
 
@@ -46,10 +54,25 @@ export default function ProductCard({ product }) {
 
         <div className="product-info">
           <h4>{product.name}</h4>
-          <div className="cat">{product.category === "bag" ? "Bags" : "Shoes"}</div>
-          {/* salePrice field "original/was" price ki tarah use ho rahi hai —
-              agar woh current price se zyada hai to PriceTag discount dikha dega */}
-          <PriceTag price={product.price} originalPrice={product.salePrice} />
+          <div className="cat">{formatCategoryLabel(product.category)}</div>
+          <PriceTag price={current} originalPrice={original} />
+          {/* Price ke neeche chhote color dots (Outfitters style) — max 5
+              dikhate hain, zyada colors hon to "+N" bata dete hain */}
+          {colors.length > 0 && (
+            <div className="product-color-dots">
+              {colors.slice(0, 5).map((color) => (
+                <span
+                  key={color}
+                  className="product-color-dot"
+                  style={{ background: colorToHex(color) }}
+                  title={color}
+                />
+              ))}
+              {colors.length > 5 && (
+                <span className="product-color-dot-more">+{colors.length - 5}</span>
+              )}
+            </div>
+          )}
         </div>
       </Link>
 

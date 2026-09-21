@@ -381,8 +381,11 @@ header.site{
 
 .product-info h4{ font-family: var(--font-body); font-weight:600; font-size: 14.5px; margin-bottom:3px; }
 .product-info .cat{ font-size:12px; color: var(--grey); margin-bottom:6px; }
-.price-row{ display:flex; align-items:center; gap:8px; font-size: 14px; }
-.price-row-lg{ font-size: 20px; }
+.price-row{ display:flex; align-items:center; gap:8px; font-size: 14px; margin-bottom:6px; }
+.product-color-dots{ display:flex; align-items:center; gap:5px; }
+.product-color-dot{ width:12px; height:12px; border-radius:50%; border: 1px solid rgba(0,0,0,.12); flex-shrink:0; }
+.product-color-dot-more{ font-size: 10.5px; color: var(--grey); font-weight:600; }
+.price-row-lg{ font-size: 20px; margin-bottom:0; }
 .price-row-lg .price-now{ font-size: 20px; }
 .price-now{ font-weight:700; }
 .price-was{ color: var(--grey); text-decoration: line-through; font-size:12.5px; }
@@ -925,6 +928,7 @@ footer.site{ background: var(--cream); border-top: 1px solid var(--line); }
   opacity: 0.9;
 }
 .cb-visual svg{ width: 100%; height: auto; }
+.cb-visual-image{ width: 100%; height: auto; display: block; border-radius: 4px; }
 
 .cb-text{ position: relative; z-index: 2; }
 .cb-text h2{
@@ -991,7 +995,9 @@ footer.site{ background: var(--cream); border-top: 1px solid var(--line); }
 .variant-stock-row{ display:flex; justify-content:space-between; align-items:center; gap: 12px; }
 .variant-stock-row span{ font-size: 13.5px; }
 .variant-stock-row input{ width: 80px; padding: 8px 10px; border:1px solid var(--line); border-radius:3px; }
+.variant-remove{ font-size: 12px; color: var(--red); text-decoration: underline; white-space: nowrap; }
 .admin-form-actions{ display:flex; gap: 10px; margin-top: 20px; }
+.admin-product-form .btn-sm{ padding: 9px 14px; font-size: 12.5px; margin-top: 4px; }
 
 /* Admin products table */
 .admin-back-link{ font-size: 12.5px; color: var(--grey); display:block; margin-bottom: 6px; }

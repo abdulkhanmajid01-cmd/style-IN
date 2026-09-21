@@ -6,12 +6,6 @@
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import ProductGrid from "@/components/ProductGrid";
-import { categories } from "@/lib/data/categories";
-
-const FILTERS = [
-  { key: "all", label: "All" },
-  ...categories.map((cat) => ({ key: cat.slug, label: cat.name })),
-];
 
 export default function ShopPage() {
   return (
@@ -31,13 +25,22 @@ function ShopContent() {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Filter pills bhi live categories se | /api/categories (jo store se
+  // aati hain) — admin ka naya category turant yahan pill ban jata hai
+  const [filters, setFilters] = useState([{ key: "all", label: "All" }]);
+
   useEffect(() => {
-    fetch("/api/products")
-      .then((res) => res.json())
-      .then((data) => {
-        setProducts(data);
-        setIsLoading(false);
-      });
+    Promise.all([
+      fetch("/api/products").then((res) => res.json()),
+      fetch("/api/categories").then((res) => res.json()),
+    ]).then(([productsData, catData]) => {
+      setProducts(productsData);
+      setFilters([
+        { key: "all", label: "All" },
+        ...catData.map((cat) => ({ key: cat.slug, label: cat.name })),
+      ]);
+      setIsLoading(false);
+    });
   }, []);
 
   const filteredProducts =
@@ -62,7 +65,7 @@ function ShopContent() {
         <div className="wrap">
           <div className="shop-toolbar">
             <div className="filter-pills">
-              {FILTERS.map((filter) => (
+              {filters.map((filter) => (
                 <button
                   key={filter.key}
                   className={`pill ${activeCategory === filter.key ? "active" : ""}`}
