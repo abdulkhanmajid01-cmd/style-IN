@@ -8,10 +8,11 @@ import Hero from "@/components/Hero";
 import ProductGrid from "@/components/ProductGrid";
 import CategoryBanner from "@/components/CategoryBanner";
 import Button from "@/components/ui/Button";
-import { products, getProductsByCategory } from "@/lib/data/products";
+import { getAllProducts, getProductsByCategory } from "@/lib/data/store";
 import { categories } from "@/lib/data/categories";
 
 export default function HomePage() {
+  const products = getAllProducts();
   // "Featured" ke liye abhi sirf pehle 4 products le rahe hain.
   // Phase 3 mein yeh database query se aayega (jaise "isFeatured: true" filter)
   const featuredProducts = products.slice(0, 4);

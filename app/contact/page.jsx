@@ -28,17 +28,35 @@ const FAQS = [
 export default function ContactPage() {
   const [formData, setFormData] = useState({ name: "", email: "", order: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   function handleChange(e) {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
   }
 
-  // Phase 1: sirf local success state dikhata hai. Phase 2 mein yeh function
-  // /api/contact ko real POST request bhejega — form ka JSX badalne ki
-  // zaroorat nahi hogi, sirf yeh function update hoga.
-  function handleSubmit(e) {
+  // Ab real /api/contact ko POST request bhejta hai — message store.js
+  // mein save hota hai, taake khoya na jaye
+  async function handleSubmit(e) {
     e.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    const res = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+
+    setIsSubmitting(false);
+
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error || "Something went wrong. Please try again.");
+      return;
+    }
+
     setSubmitted(true);
     setFormData({ name: "", email: "", order: "", message: "" });
   }
@@ -60,7 +78,6 @@ export default function ContactPage() {
         <div className="wrap contact-grid">
           <div>
             {submitted ? (
-              // Submit hone ke baad form ki jagah ek confirmation dikhate hain
               <div className="cart-empty" style={{ alignItems: "flex-start", padding: 0 }}>
                 <p style={{ fontSize: 15, fontWeight: 600, color: "var(--black)" }}>
                   Thanks — we&apos;ll get back to you soon.
@@ -87,8 +104,9 @@ export default function ContactPage() {
                   <label htmlFor="message">Message</label>
                   <textarea id="message" value={formData.message} onChange={handleChange} placeholder="How can we help?" required />
                 </div>
-                <Button type="submit" fullWidth>
-                  Send Message
+                {error && <p className="field-error">{error}</p>}
+                <Button type="submit" fullWidth disabled={isSubmitting}>
+                  {isSubmitting ? "Sending..." : "Send Message"}
                 </Button>
               </form>
             )}
@@ -131,9 +149,6 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* FAQ — AccordionSection reuse ho raha hai, jo humne product page
-          ke liye banaya tha. Yeh alag file/component ban chuka hai isliye
-          yahan dobara implement karne ki zaroorat nahi padi. */}
       <section className="section-tight" style={{ background: "var(--cream)", borderTop: "1px solid var(--line)" }}>
         <div className="wrap" style={{ maxWidth: 820 }}>
           <div className="section-head">

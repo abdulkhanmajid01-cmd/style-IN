@@ -1,6 +1,4 @@
 "use client";
-// "use client" zaroori hai — useCart() aur useRouter() (redirect ke liye)
-// dono client-side hooks hain.
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -14,26 +12,38 @@ export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  // CheckoutForm khud validation kar ke sirf clean/valid data yahan bhejta
-  // hai — is function ka kaam sirf "order place karna" hai.
-  function handlePlaceOrder(formData) {
+  // CheckoutForm khud validation kar chuka hota hai — yahan sirf order
+  // ko backend tak pahunchana hai
+  async function handlePlaceOrder(formData) {
     setIsSubmitting(true);
+    setError("");
 
-    // PHASE 1 (abhi): koi real backend nahi, isliye ek fake order ID
-    // generate kar rahe hain aur seedha confirmation page par bhej rahe hain.
-    // PHASE 2 mein: yahan /api/orders ko POST request jayegi (formData +
-    // items + totalPrice ke sath), aur real order ID response se milega.
-    const fakeOrderId = "SIN-" + Math.floor(10000 + Math.random() * 90000);
+    const res = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...formData, // fullName, email, phone, whatsapp, address, city
+        items,
+        totalPrice,
+      }),
+    });
 
-    setTimeout(() => {
-      clearCart(); // order "place" hone ke baad cart khali
-      router.push(`/order-confirmation/${fakeOrderId}`);
-    }, 600); // halka delay — real network request jaisa feel dene ke liye
+    setIsSubmitting(false);
+
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error || "Something went wrong. Please try again.");
+      return;
+    }
+
+    // Server ne real order banaya — usi ka ID use karenge (fake ID ab nahi banate)
+    const order = await res.json();
+    clearCart();
+    router.push(`/order-confirmation/${order.id}`);
   }
 
-  // Agar cart hi khali hai, to checkout form dikhane ka koi fayda nahi —
-  // user ko wapas shop ki taraf bhejte hain
   if (items.length === 0) {
     return (
       <section className="section">
@@ -63,6 +73,9 @@ export default function CheckoutPage() {
         <div className="wrap contact-grid">
           <div>
             <CheckoutForm onSubmit={handlePlaceOrder} isSubmitting={isSubmitting} />
+            {/* Server-side error (jaise network fail) yahan dikhta hai — form
+                ke apne field errors se alag, is wajah se yahan bahar rakha */}
+            {error && <p className="field-error" style={{ marginTop: 12 }}>{error}</p>}
           </div>
 
           <div>

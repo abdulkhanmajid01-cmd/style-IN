@@ -21,3 +21,5 @@ npm-debug.log*
 
 # Vercel
 .vercel
+# Uploaded product images (local-only in Phase 2, Supabase Storage in Phase 3)
+/public/uploads/

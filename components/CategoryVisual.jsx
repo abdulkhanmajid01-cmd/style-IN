@@ -1,12 +1,6 @@
 // CategoryVisual.jsx — Server Component (koi "use client" nahi, koi
 // interactivity nahi). Yeh sirf ek visual box banata hai jisme category ke
 // hisaab se line-art icon hota hai.
-//
-// IMPORTANT: Yeh Phase 1 ka temporary placeholder hai (real product photos
-// nahi hain abhi). Phase 3 mein jab admin panel se real image upload hogi,
-// tab sirf is EK file ko update karna hoga (<img src={product.image}> se
-// replace karna) — ProductCard ya product detail page ko chedna nahi parega,
-// kyunke dono is component ko import karte hain, khud icon nahi banate.
 
 const ICONS = {
   bag: (
@@ -24,23 +18,26 @@ const ICONS = {
   ),
 };
 
-// Product id se ek consistent (hamesha wahi) background shade choose karta
-// hai — 5 halke shades (pv-1 se pv-5) globals.css mein already defined hain.
 function getVisualClass(id) {
   const index = (Number(id) % 5) + 1;
   return `pv-${index}`;
 }
 
 // size: "card" (default, chhota — grid mein) | "detail" (bada — product page par)
+// image: optional — agar admin ne real photo upload ki ho to woh dikhegi,
+// warna niche wala line-art icon fallback ban jata hai
 // children: optional — jaise <Badge>, jo box ke andar top-left corner mein
-// position hota hai (CSS ".product-visual" par position:relative hai,
-// isliye Badge ko yahi ke andar hona chahiye taake positioning sahi rahe)
-export default function CategoryVisual({ id, category, size = "card", children }) {
+// position hota hai
+export default function CategoryVisual({ id, category, size = "card", image, children }) {
   const sizeClass = size === "detail" ? "product-visual-lg" : "";
   return (
     <div className={`product-visual ${getVisualClass(id)} ${sizeClass}`}>
       {children}
-      {ICONS[category]}
+      {image ? (
+        <img src={image} alt="" className="product-visual-image" />
+      ) : (
+        ICONS[category]
+      )}
     </div>
   );
 }

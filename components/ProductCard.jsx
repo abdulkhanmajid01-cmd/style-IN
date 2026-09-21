@@ -30,7 +30,7 @@ export default function ProductCard({ product }) {
     <div className="product-card">
       {/* Poora visual+info area clickable hai (product detail page tak) */}
       <Link href={`/product/${product.slug}`} className="product-card-link">
-        <CategoryVisual id={product.id} category={product.category}>
+        <CategoryVisual id={product.id} category={product.category} image={product.image}>
           {/* Sold-out badge sab se pehle check hota hai — agar khatam hai to
               "New"/"Sale" badge se zyada zaroori info yehi hai */}
           {soldOut ? (

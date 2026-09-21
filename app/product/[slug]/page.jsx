@@ -2,11 +2,10 @@
 // "use client" zaroori hai — quantity/color/size selection (useState) aur
 // "Add to Bag" (useCart) dono client-side interactivity hain.
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
-  getProductBySlug,
   getProductColors,
   getProductSizes,
   getVariantStock,
@@ -20,8 +19,6 @@ import PriceTag from "@/components/ui/PriceTag";
 import Button from "@/components/ui/Button";
 import AccordionSection from "@/components/ui/AccordionSection";
 
-// Color naam ko ek actual dikhne wale swatch color se map karte hain.
-// Naya color agar list mein na ho to fallback grey dikhega (crash nahi hoga).
 const COLOR_HEX = {
   Black: "#1a1a1a",
   White: "#f5f5f0",
@@ -38,29 +35,51 @@ function colorToHex(name) {
 }
 
 export default function ProductDetailPage({ params }) {
-  const product = getProductBySlug(params.slug);
-
-  // Agar slug se koi product na mile (galat/purana URL), Next.js ka
-  // built-in 404 page dikhayenge — crash ya khali safa nahi
-  if (!product) {
-    notFound();
-  }
-
+  // Sab hooks upar, unconditionally declare karte hain — chahe product
+  // load hua ho ya nahi, taake "rules of hooks" na tootein
   const { addToCart } = useCart();
+  const [product, setProduct] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [variantError, setVariantError] = useState("");
 
-  const soldOut = isProductSoldOut(product); // poora product hi khatam hai
+  // Live data /api/products/[slug] se — admin ke edits reflect karta hai
+  useEffect(() => {
+    fetch(`/api/products/${params.slug}`)
+      .then((res) => {
+        if (res.status === 404) {
+          setNotFoundFlag(true);
+          return null;
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (data) setProduct(data);
+        setIsLoading(false);
+      });
+  }, [params.slug]);
+
+  if (notFoundFlag) {
+    notFound();
+    return null;
+  }
+
+  if (isLoading || !product) {
+    return (
+      <section className="section">
+        <div className="wrap">Loading...</div>
+      </section>
+    );
+  }
+
+  const soldOut = isProductSoldOut(product);
   const colors = getProductColors(product);
-  // Sizes sirf tab exist karti hain jab selectedColor chuna gaya ho AND us
-  // color ke liye sizes ho (bags ke liye yeh hamesha khali array rahega)
   const sizes = selectedColor ? getProductSizes(product, selectedColor) : [];
   const hasSizes = sizes.length > 0;
 
-  // Selected combination (ya sirf color, bags ke liye) ka stock — Add to
-  // Bag button aur error messages isi par depend karte hain
   const currentStock = selectedColor
     ? getVariantStock(product, selectedColor, hasSizes ? selectedSize : null)
     : null;
@@ -84,8 +103,6 @@ export default function ProductDetailPage({ params }) {
       {
         id: product.id,
         slug: product.slug,
-        // Naam mein color/size bhi shamil kar rahe hain taake cart mein
-        // dikhe ke kaunsa variant add hua (jaise "Classic Block Heels — Black, 39")
         name: `${product.name} — ${selectedColor}${selectedSize ? `, ${selectedSize}` : ""}`,
         price: product.price,
       },
@@ -101,7 +118,7 @@ export default function ProductDetailPage({ params }) {
         </div>
 
         <div className="product-detail-grid">
-          <CategoryVisual id={product.id} category={product.category} size="detail">
+          <CategoryVisual id={product.id} category={product.category} size="detail" image={product.image}>
             {soldOut ? (
               <Badge variant="sold-out">Sold Out</Badge>
             ) : (
@@ -118,8 +135,6 @@ export default function ProductDetailPage({ params }) {
             <h1>{product.name}</h1>
             <PriceTag price={product.price} originalPrice={product.salePrice} size="lg" />
 
-            {/* Color swatches — sirf woh colors dikhte hain jinke variants
-                exist karte hain (variants array se derive, hardcoded nahi) */}
             <div className="variant-group">
               <label>
                 Color{" "}
@@ -134,9 +149,9 @@ export default function ProductDetailPage({ params }) {
                       className={`color-swatch ${selectedColor === color ? "selected" : ""} ${colorOut ? "out-of-stock" : ""}`}
                       style={{ borderColor: selectedColor === color ? "#7c5636" : "transparent" }}
                       onClick={() => {
-                        if (colorOut) return; // khatam color select hi nahi hogi
+                        if (colorOut) return;
                         setSelectedColor(color);
-                        setSelectedSize(null); // color badalte hi purani size reset — size dusre color mein available na ho sakti
+                        setSelectedSize(null);
                         setVariantError("");
                       }}
                       disabled={colorOut}
@@ -144,20 +159,13 @@ export default function ProductDetailPage({ params }) {
                       aria-pressed={selectedColor === color}
                       title={colorOut ? "Out of stock" : undefined}
                     >
-                      <span
-                        className="color-swatch-inner"
-                        style={{ background: colorToHex(color) }}
-                      />
+                      <span className="color-swatch-inner" style={{ background: colorToHex(color) }} />
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Size selector — sirf tab dikhta hai jab color chun li gayi ho
-                aur us color ke liye sizes exist karti hon (shoes). Har size
-                button apna stock check karta hai — 0 stock waali size
-                disabled/greyed out dikhti hai, click nahi hoti. */}
             {selectedColor && hasSizes && (
               <div className="variant-group">
                 <label>
@@ -173,7 +181,7 @@ export default function ProductDetailPage({ params }) {
                         key={size}
                         className={`size-option ${selectedSize === size ? "selected" : ""} ${outOfStock ? "out-of-stock" : ""}`}
                         onClick={() => {
-                          if (outOfStock) return; // khatam size click hi nahi hogi
+                          if (outOfStock) return;
                           setSelectedSize(size);
                           setVariantError("");
                         }}
@@ -192,17 +200,11 @@ export default function ProductDetailPage({ params }) {
             <div className="quantity-selector">
               <label>Quantity</label>
               <div className="quantity-controls">
-                <button
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  aria-label="Decrease quantity"
-                >
+                <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} aria-label="Decrease quantity">
                   −
                 </button>
                 <span>{quantity}</span>
-                <button
-                  onClick={() => setQuantity((q) => q + 1)}
-                  aria-label="Increase quantity"
-                >
+                <button onClick={() => setQuantity((q) => q + 1)} aria-label="Increase quantity">
                   +
                 </button>
               </div>
@@ -220,9 +222,6 @@ export default function ProductDetailPage({ params }) {
 
             <p className="product-description">{product.description}</p>
 
-            {/* Generic placeholder content abhi — aap baad mein real
-                Size Guide/Details/Returns content de dena, sirf yeh
-                <AccordionSection> ke andar wala text replace karna hoga */}
             <div style={{ marginTop: 8 }}>
               <AccordionSection title="Size Guide">
                 Sizes are true to fit. If you're between sizes, we recommend
