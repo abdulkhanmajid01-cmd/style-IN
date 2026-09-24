@@ -56,13 +56,18 @@ export default function CartDrawer() {
               <>
                 <div className="cart-items">
                   {items.map((item) => (
-                    <div key={item.id} className="cart-item">
+                    <div key={item.cartItemId} className="cart-item">
                       <div className="cart-item-info">
                         <h4>{item.name}</h4>
+                        {(item.color || item.size) && (
+                          <p className="cart-item-variant">
+                            {[item.color, item.size].filter(Boolean).join(", ")}
+                          </p>
+                        )}
                         <PriceTag price={item.price} />
                         <button
                           className="cart-item-remove"
-                          onClick={() => removeFromCart(item.id)}
+                          onClick={() => removeFromCart(item.cartItemId)}
                           aria-label={`Remove ${item.name} from cart`}
                         >
                           Remove
@@ -73,14 +78,14 @@ export default function CartDrawer() {
                         {/* Quantity −/+ — updateQuantity khud handle karta hai
                             ke 0 par pahunchne se item remove ho jaye */}
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)}
                           aria-label={`Decrease quantity of ${item.name}`}
                         >
                           −
                         </button>
                         <span>{item.quantity}</span>
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}
                           aria-label={`Increase quantity of ${item.name}`}
                         >
                           +

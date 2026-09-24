@@ -4,5 +4,5 @@ import { getAllContactMessages } from "@/lib/data/store";
 // Yeh route middleware.js se already protected hai (/api/admin/:path*)
 
 export async function GET() {
-  return NextResponse.json(getAllContactMessages());
+  return NextResponse.json(await getAllContactMessages());
 }

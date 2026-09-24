@@ -14,7 +14,7 @@ import {
   colorToHex,
   formatCategoryLabel,
   isProductSoldOut,
-} from "@/lib/data/products";
+} from "@/lib/product-utils";
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();

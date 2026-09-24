@@ -7,7 +7,7 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 
 // YAHAN apna chosen admin password likhein
-const password = "StyleIN@2026";
+const password = "YOUR_PASSWORD_HERE";
 
 async function run() {
   const hash = await bcrypt.hash(password, 10);

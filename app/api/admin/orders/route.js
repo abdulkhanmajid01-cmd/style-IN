@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAllOrders, updateOrderStatus } from "@/lib/data/store";
 
 export async function GET() {
-  const orders = [...getAllOrders()].reverse();
+  const orders = [...(await getAllOrders())].reverse();
   return NextResponse.json(orders);
 }
 
@@ -13,7 +13,7 @@ export async function PATCH(request) {
     return NextResponse.json({ error: "id and status are required." }, { status: 400 });
   }
 
-  const updated = updateOrderStatus(id, status);
+  const updated = await updateOrderStatus(id, status);
   if (!updated) {
     return NextResponse.json({ error: "Order not found." }, { status: 404 });
   }

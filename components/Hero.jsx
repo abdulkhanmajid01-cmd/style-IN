@@ -40,9 +40,9 @@ export default function Hero() {
               variants={fadeUp}
               transition={{ duration: 0.5 }}
             >
-              Bags and shoes designed for Karachi's mornings, Lahore's
+              Bags and shoes designed for Karachi&apos;s mornings, Lahore&apos;s
               evenings, and everything that happens in between. No fuss, no
-              fragile stitching — just pieces you'll actually reach for.
+              fragile stitching — just pieces you&apos;ll actually reach for.
             </motion.p>
 
             <motion.div

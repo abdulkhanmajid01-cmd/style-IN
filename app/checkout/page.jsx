@@ -83,11 +83,18 @@ export default function CheckoutPage() {
               <h3>Order Summary</h3>
               {items.map((item) => (
                 <div
-                  key={item.id}
+                  key={item.cartItemId}
                   style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}
                 >
                   <span style={{ fontSize: 13.5 }}>
-                    {item.name} × {item.quantity}
+                    {item.name}
+                    {(item.color || item.size) && (
+                      <span style={{ opacity: 0.7 }}>
+                        {" "}
+                        — {[item.color, item.size].filter(Boolean).join(", ")}
+                      </span>
+                    )}{" "}
+                    × {item.quantity}
                   </span>
                   <span style={{ fontSize: 13.5 }}>
                     <PriceTag price={item.price * item.quantity} />

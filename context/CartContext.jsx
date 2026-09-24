@@ -12,8 +12,16 @@ const CartContext = createContext(null);
 
 const STORAGE_KEY = "style-in-cart"; // localStorage mein isi naam se cart save hoga
 
+// Har cart item ki uniqueness: productId + color + size. Aisi hi ek entry.
+// Yehi key remove/update/merge sab jagah use hoti hai — sirf productId nahi,
+// warna alag variant (Red vs Blue) ek line mein merge ho jata tha (bug).
+function getCartItemId(item) {
+  return `${item.id}-${item.color || "default"}-${item.size || "default"}`;
+}
+
 export function CartProvider({ children }) {
-  // items: cart ke andar products ka array — har item: { id, slug, name, price, quantity }
+  // items: cart ke andar products ka array — har item:
+  // { id, cartItemId, slug, name, color, size, price, quantity }
   const [items, setItems] = useState([]);
 
   // isCartOpen: cart drawer khula hai ya band — Header ka cart icon isko toggle karega
@@ -29,10 +37,25 @@ export function CartProvider({ children }) {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
-        setItems(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        // Legacy IDs (chhote numeric ids jaise "1".."6") ab UUID hai database
+        // mein — woh issue cart rakhne se order create par FK crash hota. Isliye
+        // aisa purana cart milte hi clear kar dete hain (order IDs ab 36-char UUID).
+        // Ek taraf naye items ko bhi normalize karte hain (missing cartItemId
+        // derive) taake koi purana-but-non-shattered cache bhi kaam kare.
+        if (Array.isArray(parsed) && parsed.some((item) => String(item.id).length < 10)) {
+          localStorage.removeItem(STORAGE_KEY);
+          setItems([]);
+        } else {
+          setItems(
+            parsed.map((item) => ({
+              ...item,
+              cartItemId: item.cartItemId || getCartItemId(item),
+            }))
+          );
+        }
       } catch {
-        // Agar saved data corrupt/invalid ho to chup chap ignore kar dete hain
-        // (cart khali rahega, app crash nahi hogi)
+        localStorage.removeItem(STORAGE_KEY);
       }
     }
     setIsHydrated(true);
@@ -47,37 +70,39 @@ export function CartProvider({ children }) {
     }
   }, [items, isHydrated]);
 
-  // Product ko cart mein add karta hai. Agar wahi product (same id) already
-  // cart mein hai, to uski quantity +1 badha dete hain — naya entry nahi banate.
+  // Product ko cart mein add karta hai. Uniqueness = productId + color + size
+  // (cartItemId). Same variant dobara add ho to quantity +1 — alag variant
+  // (Red vs Blue) apna alag line item banata hai.
   function addToCart(product, quantity = 1) {
     setItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
+      const cartItemId = getCartItemId(product);
+      const existing = prev.find((item) => item.cartItemId === cartItemId);
       if (existing) {
         return prev.map((item) =>
-          item.id === product.id
+          item.cartItemId === cartItemId
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       }
-      return [...prev, { ...product, quantity }];
+      return [...prev, { ...product, cartItemId, quantity }];
     });
     setIsCartOpen(true); // add karte hi drawer khud khul jaye — user ko confirm feel ho
   }
 
-  // Cart se ek item poora hata dena (quantity chahe kuch bhi ho)
-  function removeFromCart(id) {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+  // Cart se ek item poora hata dena (quantity chahe kuch bhi ho) — cartItemId se
+  function removeFromCart(cartItemId) {
+    setItems((prev) => prev.filter((item) => item.cartItemId !== cartItemId));
   }
 
   // Quantity update karna (+/− buttons se). Agar quantity 0 ya kam ho jaye
-  // to item khud-ba-khud cart se remove ho jata hai.
-  function updateQuantity(id, quantity) {
+  // to item khud-ba-khud cart se remove ho jata hai. cartItemId se match hota hai.
+  function updateQuantity(cartItemId, quantity) {
     if (quantity <= 0) {
-      removeFromCart(id);
+      removeFromCart(cartItemId);
       return;
     }
     setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity } : item))
+      prev.map((item) => (item.cartItemId === cartItemId ? { ...item, quantity } : item))
     );
   }
 

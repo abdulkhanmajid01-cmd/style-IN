@@ -11,6 +11,6 @@ export async function POST(request) {
     );
   }
 
-  const saved = addContactMessage({ name, email, order, message });
+  const saved = await addContactMessage({ name, email, order, message });
   return NextResponse.json(saved, { status: 201 });
 }

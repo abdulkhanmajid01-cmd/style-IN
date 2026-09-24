@@ -54,7 +54,7 @@ export default function Footer() {
           <div>
             <h3>Get first look at new drops</h3>
             <p>One email a week, mostly new arrivals and the occasional sale.</p>
-            {subscribed && <p className="nl-note show">Thanks — you're on the list.</p>}
+            {subscribed && <p className="nl-note show">Thanks — you&apos;re on the list.</p>}
           </div>
           <form className="nl-form" onSubmit={handleSubscribe}>
             <input
@@ -79,7 +79,7 @@ export default function Footer() {
             </Link>
             <p>
               Bags and shoes designed for everyday Pakistan — considered pieces
-              you'll actually reach for, at prices that make sense.
+              you&apos;ll actually reach for, at prices that make sense.
             </p>
             <div className="social-row">
               {/* NOTE: placeholder links hain — apna asal Instagram handle aur

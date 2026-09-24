@@ -12,7 +12,7 @@ export default function AdminLoginPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError("");
+    setError(" ");
     setIsSubmitting(true);
 
     const res = await fetch("/api/admin/login", {

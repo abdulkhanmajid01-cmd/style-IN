@@ -6,5 +6,5 @@ import { getAllProducts } from "@/lib/data/store";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  return NextResponse.json(getAllProducts());
+  return NextResponse.json(await getAllProducts());
 }

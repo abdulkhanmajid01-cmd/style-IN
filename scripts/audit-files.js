@@ -50,13 +50,13 @@ const expectedFiles = [
   "context/CartContext.jsx",
   "jsconfig.json",
   "lib/auth.js",
-  "lib/data/categories.js",
-  "lib/data/products.js",
+  "lib/product-utils.js",
   "lib/data/store.js",
   "lib/slugify.js",
   "middleware.js",
   "next.config.js",
   "package.json",
+  "prisma/seed-data.js",
 ];
 
 console.log("\n🔍 Style-IN Project File Audit\n");

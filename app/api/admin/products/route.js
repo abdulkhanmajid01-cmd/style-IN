@@ -9,7 +9,7 @@ import {
 
 
 export async function GET() {
-  return NextResponse.json(getAllProducts());
+  return NextResponse.json(await getAllProducts());
 }
 
 export async function POST(request) {
@@ -24,7 +24,7 @@ export async function POST(request) {
 
   // Explicit normalization — khali/undefined fields null ho jayein aur badge
   // ("sale"/"new") string ke roop mein wahi rahe jaisa form bhejta hai
-  const newProduct = addProduct({
+  const newProduct = await addProduct({
     ...body,
     price: Number(body.price),
     salePrice: body.salePrice ? Number(body.salePrice) : null,
@@ -50,7 +50,7 @@ export async function PUT(request) {
     updates.badge = updates.badge && String(updates.badge).trim() ? String(updates.badge).trim() : null;
   }
 
-  const updated = updateProduct(id, updates);
+  const updated = await updateProduct(id, updates);
   if (!updated) {
     return NextResponse.json({ error: "Product not found." }, { status: 404 });
   }
@@ -66,7 +66,7 @@ export async function DELETE(request) {
     return NextResponse.json({ error: "Product id is required." }, { status: 400 });
   }
 
-  const deleted = deleteProduct(id);
+  const deleted = await deleteProduct(id);
   if (!deleted) {
     return NextResponse.json({ error: "Product not found." }, { status: 404 });
   }

@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String
+  slug      String    @unique
+  imageUrl  String?
+  bannerTitle  String?
+  bannerSubtitle  String?
+  visual     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Product {
+  id             String      @id @default(uuid())
+  name           String
+  slug           String      @unique
+  description    String
+  price          Float
+  salePrice      Float?
+  badge          String?
+  isFeatured     Boolean     @default(false)
+  image          String?     
+  categoryId     String
+  category       Category    @relation(fields: [categoryId], references: [id])
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  variants       Json?       
+  orderItems     OrderItem[]
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  customerName  String
+  phone         String
+  email         String
+  whatsapp      String?
+  address       String
+  city          String
+  totalAmount   Float
+  status        String      @default("Pending")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float   
+  color     String? 
+  size      String? 
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  order     String?
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model LoginAttempt {
+  id        String   @id @default(uuid())
+  ipAddress String
+  timestamp DateTime @default(now())
+  success   Boolean
+}

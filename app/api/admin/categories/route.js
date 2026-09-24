@@ -18,7 +18,7 @@ import {
 import { slugify } from "@/lib/slugify";
 
 export async function GET() {
-  return NextResponse.json(getAllCategories());
+  return NextResponse.json(await getAllCategories());
 }
 
 export async function POST(request) {
@@ -29,7 +29,7 @@ export async function POST(request) {
     return NextResponse.json({ error: "name is required." }, { status: 400 });
   }
 
-  const newCategory = addCategory({
+  const newCategory = await addCategory({
     name,
     slug: slugify(name),
     bannerTitle: body.bannerTitle || name.toUpperCase(),
@@ -52,7 +52,7 @@ export async function PUT(request) {
   // name update par bhi slug wahi rehta hai — products usi se link hain
   if (updates.name !== undefined) updates.name = String(updates.name).trim();
 
-  const updated = updateCategory(slug, updates);
+  const updated = await updateCategory(slug, updates);
   if (!updated) {
     return NextResponse.json({ error: "Category not found." }, { status: 404 });
   }
@@ -70,7 +70,7 @@ export async function DELETE(request) {
 
   // Agar kisi product ki category yeh slug hai to delete block karo —
   // warna products bina category ke rah jate aur seed data toot jata
-  const hasProducts = getAllProducts().some((p) => p.category === slug);
+  const hasProducts = (await getAllProducts()).some((p) => p.category === slug);
   if (hasProducts) {
     return NextResponse.json(
       { error: "Is category mein products hain — pehle unhe dusri category mein move ya delete karein" },
@@ -78,7 +78,7 @@ export async function DELETE(request) {
     );
   }
 
-  const deleted = deleteCategory(slug);
+  const deleted = await deleteCategory(slug);
   if (!deleted) {
     return NextResponse.json({ error: "Category not found." }, { status: 404 });
   }

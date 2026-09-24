@@ -8,21 +8,33 @@ import Hero from "@/components/Hero";
 import ProductGrid from "@/components/ProductGrid";
 import CategoryBanner from "@/components/CategoryBanner";
 import Button from "@/components/ui/Button";
-import { getAllProducts, getProductsByCategory, getAllCategories } from "@/lib/data/store";
+import {
+  getFeaturedProducts,
+  getProductsByBadge,
+  getProductsByCategory,
+  getAllCategories,
+} from "@/lib/data/store";
 
 // Yeh page store se directly padhta hai (admin ke live changes ke liye) —
 // is liye force-dynamic: warna Next.js 14 build-time par isay static
 // prerender kar deta aur runtime ke naye categories home par kabhi na dikhte
 export const dynamic = "force-dynamic";
 
-export default function HomePage() {
-  const products = getAllProducts();
-  // Categories bhi ab live store se aati hain (products jaisa) — admin ka
-  // naya add kiya hua category yahan khud-ba-khud banner dikhata hai
-  const categories = getAllCategories();
-  // "Featured" ke liye abhi sirf pehle 4 products le rahe hain.
-  // Phase 3 mein yeh database query se aayega (jaise "isFeatured: true" filter)
-  const featuredProducts = products.slice(0, 4);
+export default async function HomePage() {
+  // Sab data live DB queries se — isFeatured=true featured section, badge
+  // "sale" sale section. Hardcoded slices/products ab nahi hain.
+  const [featuredProducts, saleProducts, categories] = await Promise.all([
+    getFeaturedProducts(),
+    getProductsByBadge("sale"),
+    getAllCategories(),
+  ]);
+
+  const categorySections = await Promise.all(
+    categories.map(async (category) => ({
+      category,
+      categoryProducts: await getProductsByCategory(category.slug),
+    }))
+  );
 
   return (
     <>
@@ -34,8 +46,7 @@ export default function HomePage() {
           chedne ki zaroorat nahi. */}
       <section className="section-tight">
         <div className="wrap">
-          {categories.map((category) => {
-            const categoryProducts = getProductsByCategory(category.slug);
+          {categorySections.map(({ category, categoryProducts }) => {
             return (
               <div key={category.slug} style={{ marginBottom: 56 }}>
                 <CategoryBanner category={category} productCount={categoryProducts.length} />
@@ -46,7 +57,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured products */}
+      {/* Featured products — isFeatured: true (admin panel se toggle hota hai) */}
       <section className="section">
         <div className="wrap">
           <div className="section-head">
@@ -58,6 +69,21 @@ export default function HomePage() {
           <ProductGrid products={featuredProducts} />
         </div>
       </section>
+
+      {/* Sale products — badge === "sale" (DB se, live) */}
+      {saleProducts.length > 0 && (
+        <section className="section">
+          <div className="wrap">
+            <div className="section-head">
+              <h2>On Sale</h2>
+              <Link href="/shop?category=bag" className="section-link">
+                Shop the Sale
+              </Link>
+            </div>
+            <ProductGrid products={saleProducts} />
+          </div>
+        </section>
+      )}
 
       {/* Promo strip */}
       <div className="promo">

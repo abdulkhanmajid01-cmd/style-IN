@@ -240,7 +240,7 @@ export default function ProductForm({ product, onSaved, onCancel }) {
           <option value="new">New</option>
           <option value="sale">Sale</option>
         </select>
-        <p className="field-hint">Sale price ho aur badge na chuna ho to "Sale" khud lag jata hai.</p>
+        <p className="field-hint">Sale price ho aur badge na chuna ho to &quot;Sale&quot; khud lag jata hai.</p>
       </div>
 
       <div className="form-field">

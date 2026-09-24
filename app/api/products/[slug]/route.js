@@ -6,7 +6,7 @@ import { getProductBySlug } from "@/lib/data/store";
 export const dynamic = "force-dynamic";
 
 export async function GET(request, { params }) {
-  const product = getProductBySlug(params.slug);
+  const product = await getProductBySlug(params.slug);
 
   if (!product) {
     return NextResponse.json({ error: "Product not found." }, { status: 404 });

@@ -3,7 +3,6 @@
 // waqt animate hona) sirf browser mein kaam karta hai.
 
 import { motion } from "framer-motion";
-import Link from "next/link";
 import Button from "@/components/ui/Button";
 
 // Yeh "recipe" har section ke liye reuse hogi — scroll karke jab section

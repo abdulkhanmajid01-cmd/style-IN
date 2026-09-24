@@ -14,7 +14,7 @@ import {
   formatCategoryLabel,
   isProductSoldOut,
   isColorSoldOut,
-} from "@/lib/data/products";
+} from "@/lib/product-utils";
 import { useCart } from "@/context/CartContext";
 import CategoryVisual from "@/components/CategoryVisual";
 import Badge from "@/components/ui/Badge";
@@ -107,7 +107,12 @@ export default function ProductDetailPage({ params }) {
       {
         id: product.id,
         slug: product.slug,
-        name: `${product.name} — ${selectedColor}${selectedSize ? `, ${selectedSize}` : ""}`,
+        name: product.name,
+        // Color/size ab alag fields hain — cart inhe cartItemId
+        // (product+color+size) banana aur display karne ke liye use karta hai.
+        // Name mein variant text embed karne ki zaroorat nahi (do jagah dikhta).
+        color: selectedColor,
+        size: hasSizes ? selectedSize : null,
         price: current, // hamesha discounted/current price
       },
       quantity
@@ -228,7 +233,7 @@ export default function ProductDetailPage({ params }) {
 
             <div style={{ marginTop: 8 }}>
               <AccordionSection title="Size Guide">
-                Sizes are true to fit. If you're between sizes, we recommend
+                Sizes are true to fit. If you&apos;re between sizes, we recommend
                 sizing up. (Placeholder — replace with your real size chart.)
               </AccordionSection>
               <AccordionSection title="Product Details & Composition">
