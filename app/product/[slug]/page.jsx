@@ -8,6 +8,7 @@ import Link from "next/link";
 import {
   getProductColors,
   getProductSizes,
+  getProductImages,
   getVariantStock,
   getDisplayPrice,
   colorToHex,
@@ -34,6 +35,7 @@ export default function ProductDetailPage({ params }) {
   const [selectedSize, setSelectedSize] = useState(null);
   const [variantError, setVariantError] = useState("");
   const [categoryName, setCategoryName] = useState(null);
+  const [activeImage, setActiveImage] = useState(0); // gallery index
 
   // Live data /api/products/[slug] se — admin ke edits reflect karta hai
   useEffect(() => {
@@ -46,7 +48,11 @@ export default function ProductDetailPage({ params }) {
         return res.json();
       })
       .then((data) => {
-        if (data) setProduct(data);
+        if (data) {
+          setProduct(data);
+          // Naya product load hua to gallery pehli image par reset
+          setActiveImage(0);
+        }
         setIsLoading(false);
       });
   }, [params.slug]);
@@ -79,6 +85,10 @@ export default function ProductDetailPage({ params }) {
 
   const soldOut = isProductSoldOut(product);
   const colors = getProductColors(product);
+  const images = getProductImages(product);
+  // Agar images array chhoti ho ya index out of range ho to pehli image par
+  // fallback — crash nahi hoga.
+  const currentImage = images[activeImage] ?? images[0] ?? product.image ?? null;
   const sizes = selectedColor ? getProductSizes(product, selectedColor) : [];
   const hasSizes = sizes.length > 0;
   const { current, original } = getDisplayPrice(product);
@@ -127,17 +137,42 @@ export default function ProductDetailPage({ params }) {
         </div>
 
         <div className="product-detail-grid">
-          <CategoryVisual id={product.id} category={product.category} size="detail" image={product.image}>
-            {soldOut ? (
-              <Badge variant="sold-out">Sold Out</Badge>
-            ) : (
-              product.badge && (
-                <Badge variant={product.badge}>
-                  {product.badge === "sale" ? "Sale" : "New"}
-                </Badge>
-              )
+          <div className="product-gallery">
+            <CategoryVisual
+              id={product.id}
+              category={product.category}
+              size="detail"
+              image={currentImage}
+            >
+              {soldOut ? (
+                <Badge variant="sold-out">Sold Out</Badge>
+              ) : (
+                product.badge && (
+                  <Badge variant={product.badge}>
+                    {product.badge === "sale" ? "Sale" : "New"}
+                  </Badge>
+                )
+              )}
+            </CategoryVisual>
+
+            {/* Multiple images — thumbnail strip, sirf tab jab 1 se zyada image ho */}
+            {images.length > 1 && (
+              <div className="product-gallery-thumbs">
+                {images.map((src, i) => (
+                  <button
+                    key={`${src}-${i}`}
+                    type="button"
+                    className={`product-gallery-thumb ${i === activeImage ? "active" : ""}`}
+                    onClick={() => setActiveImage(i)}
+                    aria-label={`View image ${i + 1} of ${images.length}`}
+                    aria-pressed={i === activeImage}
+                  >
+                    <img src={src} alt="" />
+                  </button>
+                ))}
+              </div>
             )}
-          </CategoryVisual>
+          </div>
 
           <div className="product-detail-info">
             <div className="cat">{categoryLabel}</div>

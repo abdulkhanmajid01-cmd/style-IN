@@ -50,6 +50,7 @@ const expectedFiles = [
   "context/CartContext.jsx",
   "jsconfig.json",
   "lib/auth.js",
+  "lib/jwt.js",
   "lib/product-utils.js",
   "lib/data/store.js",
   "lib/slugify.js",

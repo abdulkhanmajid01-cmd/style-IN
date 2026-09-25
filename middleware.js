@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { verifySessionToken } from "@/lib/auth";
+// Edge runtime-safe import — "@/lib/jwt" sirf "jose" use karta hai.
+// "@/lib/auth" ko jaan-boojh kar nahi import karte, kyunki usme
+// "bcryptjs" hai jo Edge par nahi chalta.
+import { verifySessionToken } from "@/lib/jwt";
 
 export const config = {
   matcher: ["/admin/:path*", "/api/admin/:path*"],

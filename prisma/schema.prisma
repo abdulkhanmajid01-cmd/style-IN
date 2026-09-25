@@ -28,12 +28,20 @@ model Product {
   salePrice      Float?
   badge          String?
   isFeatured     Boolean     @default(false)
-  image          String?     
+  image          String?
+  // images = poore ordered gallery (JSON string array). `image` hamesha
+  // images[0] (primary thumbnail) rehta hai taake purana single-image code
+  // (ProductCard, CategoryVisual, seed) bina badle chalata rahe.
+  images         Json?
+  // attributes = category se derive hone wale dynamic traits, jaise
+  // { "dimension": "size" | "length" | "sizeOrLength" | null, "label": "..." }.
+  // Isse har category apna variant shape khud decide karti hai.
+  attributes     Json?
   categoryId     String
   category       Category    @relation(fields: [categoryId], references: [id])
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
-  variants       Json?       
+  variants       Json?
   orderItems     OrderItem[]
 }
 
